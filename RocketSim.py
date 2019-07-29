@@ -9,7 +9,7 @@ import quaternion
 #All SI units
 
 rocket_mass = 16 #not including motor
-time_step = 0.05
+time_step = 3
 c_d = 0.5
 area = 0.00258064
 
@@ -77,11 +77,11 @@ while True:
     density, temperature = get_d_t_for_altitude(altitude)
     mach = velocity/(20.05*np.sqrt(temperature))
 
-    alpha=1
-    cg=1
+    mach=0.4
+    alpha=1.0
+    cg=1.2
 
     CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = lookup(mach, alpha, altitude, cg, mass)
-
 
     drag_force = 0.5*density*(velocity**2)*area*CD
 
@@ -91,6 +91,9 @@ while True:
     velocity += delta_v
     delta_x = velocity*time_step
     altitude += delta_x
+
+    print altitude
+
     times.append(time)
     positions.append(altitude)
     velocities.append(velocity)
