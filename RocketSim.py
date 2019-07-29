@@ -39,7 +39,7 @@ def parse_thrustcurve():
     motor_thrusts = np.interp(sample_times,motor_times,motor_thrusts)
     return (motor_masses, motor_thrusts, sample_times)
 
-def get_density_for_altitude(altitude):
+def get_d_t_for_altitude(altitude):
     output = nrlmsise_output()
     Input = nrlmsise_input()
     flags = nrlmsise_flags()
@@ -53,7 +53,7 @@ def get_density_for_altitude(altitude):
     for i in range(1, 24):
         flags.switches[i]=1
     gtd7(Input, flags, output)
-    return output.d[5]*1000 #total air density in KG/M^3
+    return output.d[5]*1000, output.t[1] #total air density in KG/M^3
 
 motor_masses, motor_thrusts, sample_times = parse_thrustcurve()
 while True:
@@ -71,16 +71,19 @@ while True:
     if idx!=-1:
         mass += motor_masses[idx]
         thrust += motor_thrusts[idx]
+
     weight = mass*g
-    mach=1
+
+    density, temperature = get_d_t_for_altitude(altitude)
+    mach = velocity/(20.05*np.sqrt(temperature))
+
     alpha=1
-    alt=1
     cg=1
-    mass=1
-    CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = lookup(mach, alpha, alt, cg, mass)
+
+    CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = lookup(mach, alpha, altitude, cg, mass)
 
 
-    drag_force = 0.5*get_density_for_altitude(altitude)*(velocity**2)*area*c_d
+    drag_force = 0.5*density*(velocity**2)*area*CD
 
     net_force = thrust-weight-drag_force
     acc = net_force/mass
