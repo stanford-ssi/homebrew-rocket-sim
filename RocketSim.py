@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import time
 from NRLMSISE00.nrlmsise_00_header import *
 from NRLMSISE00.nrlmsise_00 import *
+from DigitalDATCOM.datcom_lookup import lookup
 import xml.etree.ElementTree as ET
 import quaternion
 #All SI units
@@ -71,6 +72,13 @@ while True:
         mass += motor_masses[idx]
         thrust += motor_thrusts[idx]
     weight = mass*g
+    mach=1
+    alpha=1
+    alt=1
+    cg=1
+    mass=1
+    CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = lookup(mach, alpha, alt, cg, mass)
+
 
     drag_force = 0.5*get_density_for_altitude(altitude)*(velocity**2)*area*c_d
 
