@@ -6,7 +6,7 @@ All units are in SI.
 
 ## Included packages
 * NRLMSISE-00 Python implementation, by [Joshua Milas](https://github.com/DeepHorizons/Python-NRLMSISE-00)
-* Digital DATCOM, by [USAF via PDAS] (http://www.pdas.com/datcomdownload.html)
+* Digital DATCOM, by [USAF via PDAS](http://www.pdas.com/datcomdownload.html)
 
 ## Dependencies
 * numpy
