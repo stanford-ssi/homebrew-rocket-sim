@@ -1,0 +1,208 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>RocketSim.main &#8212; SSI Homebrew Rocket Sim 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for RocketSim.main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">NRLMSISE00.nrlmsise_00_header</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">NRLMSISE00.nrlmsise_00</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">DigitalDATCOM.datcom_lookup</span> <span class="k">import</span> <span class="n">lookup</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">quaternion</span>
+<span class="c1">#All SI units</span>
+<span class="n">rocket_mass</span> <span class="o">=</span> <span class="mi">16</span> <span class="c1">#not including motor</span>
+<span class="n">time_step</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">c_d</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">area</span> <span class="o">=</span> <span class="mf">0.00258064</span>
+
+
+<span class="n">altitude</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">g</span><span class="o">=</span> <span class="mf">9.8</span>
+<span class="n">time</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">velocity</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">positions</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">velocities</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">accelerations</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span> <span class="nf">parse_thrustcurve</span><span class="p">():</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s1">&#39;Cesaroni_N5800.xml&#39;</span><span class="p">)</span>
+    <span class="n">root</span><span class="o">=</span><span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">motor_masses</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">motor_thrusts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">motor_times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">motor_masses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">])</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">motor_thrusts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;f&#39;</span><span class="p">]))</span>
+        <span class="n">motor_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">]))</span>
+    <span class="n">burn_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;burn-time&#39;</span><span class="p">])</span>
+    <span class="n">sample_times</span> <span class="o">=</span> <span class="n">time_step</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">burn_time</span><span class="o">/</span><span class="n">time_step</span><span class="p">))</span>
+    <span class="n">motor_masses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">sample_times</span><span class="p">,</span><span class="n">motor_times</span><span class="p">,</span><span class="n">motor_masses</span><span class="p">)</span>
+    <span class="n">motor_thrusts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">sample_times</span><span class="p">,</span><span class="n">motor_times</span><span class="p">,</span><span class="n">motor_thrusts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">motor_masses</span><span class="p">,</span> <span class="n">motor_thrusts</span><span class="p">,</span> <span class="n">sample_times</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_d_t_for_altitude</span><span class="p">(</span><span class="n">altitude</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">nrlmsise_output</span><span class="p">()</span>
+    <span class="n">Input</span> <span class="o">=</span> <span class="n">nrlmsise_input</span><span class="p">()</span>
+    <span class="n">flags</span> <span class="o">=</span> <span class="n">nrlmsise_flags</span><span class="p">()</span>
+    <span class="n">aph</span> <span class="o">=</span> <span class="n">ap_array</span><span class="p">()</span>
+    <span class="n">flags</span><span class="o">.</span><span class="n">switches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1">#output in MKS</span>
+    <span class="n">Input</span><span class="o">.</span><span class="n">alt</span><span class="o">=</span><span class="n">altitude</span><span class="o">/</span><span class="mi">1000</span> <span class="c1">#convert to km</span>
+    <span class="n">Input</span><span class="o">.</span><span class="n">g_lat</span> <span class="o">=</span> <span class="mf">32.990371</span> <span class="c1">#Spaceport america</span>
+    <span class="n">Input</span><span class="o">.</span><span class="n">g_long</span><span class="o">=</span> <span class="o">-</span><span class="mf">106.975116</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+        <span class="n">aph</span><span class="o">.</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="mi">100</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">24</span><span class="p">):</span>
+        <span class="n">flags</span><span class="o">.</span><span class="n">switches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">gtd7</span><span class="p">(</span><span class="n">Input</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">d</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span> <span class="n">output</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1">#total air density in KG/M^3</span>
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../index.html#RocketSim.main.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;This is the main function&quot;&quot;&quot;</span>
+    <span class="n">motor_masses</span><span class="p">,</span> <span class="n">motor_thrusts</span><span class="p">,</span> <span class="n">sample_times</span> <span class="o">=</span> <span class="n">parse_thrustcurve</span><span class="p">()</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">+=</span> <span class="n">time_step</span>
+
+        <span class="n">thrust</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">mass</span> <span class="o">=</span> <span class="n">rocket_mass</span>
+
+        <span class="n">idx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">sample_times</span><span class="p">,</span><span class="n">time</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">idx</span><span class="o">!=-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">mass</span> <span class="o">+=</span> <span class="n">motor_masses</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">thrust</span> <span class="o">+=</span> <span class="n">motor_thrusts</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">mass</span><span class="o">*</span><span class="n">g</span>
+
+        <span class="n">density</span><span class="p">,</span> <span class="n">temperature</span> <span class="o">=</span> <span class="n">get_d_t_for_altitude</span><span class="p">(</span><span class="n">altitude</span><span class="p">)</span>
+        <span class="n">mach</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">/</span><span class="p">(</span><span class="mf">20.05</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">temperature</span><span class="p">))</span>
+
+        <span class="n">mach</span><span class="o">=</span><span class="mf">0.4</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span>
+        <span class="n">cg</span><span class="o">=</span><span class="mf">1.2</span>
+
+        <span class="n">CD</span><span class="p">,</span><span class="n">CL</span><span class="p">,</span><span class="n">CM</span><span class="p">,</span><span class="n">CN</span><span class="p">,</span><span class="n">CA</span><span class="p">,</span><span class="n">XCP</span><span class="p">,</span><span class="n">CLA</span><span class="p">,</span><span class="n">CMA</span><span class="p">,</span><span class="n">CYB</span><span class="p">,</span><span class="n">CNB</span><span class="p">,</span><span class="n">CLB</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">(</span><span class="n">mach</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">altitude</span><span class="p">,</span> <span class="n">cg</span><span class="p">,</span> <span class="n">mass</span><span class="p">)</span>
+
+        <span class="n">drag_force</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">density</span><span class="o">*</span><span class="p">(</span><span class="n">velocity</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">area</span><span class="o">*</span><span class="n">CD</span>
+
+        <span class="n">net_force</span> <span class="o">=</span> <span class="n">thrust</span><span class="o">-</span><span class="n">weight</span><span class="o">-</span><span class="n">drag_force</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">net_force</span><span class="o">/</span><span class="n">mass</span>
+        <span class="n">delta_v</span> <span class="o">=</span> <span class="n">acc</span><span class="o">*</span><span class="n">time_step</span>
+        <span class="n">velocity</span> <span class="o">+=</span> <span class="n">delta_v</span>
+        <span class="n">delta_x</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">*</span><span class="n">time_step</span>
+        <span class="n">altitude</span> <span class="o">+=</span> <span class="n">delta_x</span>
+
+        <span class="nb">print</span> <span class="n">altitude</span>
+
+        <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="n">positions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">altitude</span><span class="p">)</span>
+        <span class="n">velocities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span>
+        <span class="n">accelerations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">altitude</span><span class="o">&lt;-</span><span class="mi">80</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">times</span><span class="p">,</span><span class="n">positions</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">SSI Homebrew Rocket Sim</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../RocketSim.html">RocketSim</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Rayan Sud.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
