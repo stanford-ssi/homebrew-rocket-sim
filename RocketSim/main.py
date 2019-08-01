@@ -91,9 +91,12 @@ while True:
     cg = 1.2
 
     # CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = coeff_for_conditions(mach, alpha, altitude, cg, mass)
-    coeffs = lookup([mach], [alpha], [altitude], cg, mass)
-    import pdb; pdb.set_trace()
-    drag_force = 0.5 * density * (velocity ** 2) * area * coeffs[mach, alpha, altitude]['CD']
+
+    # We could look up the coefficients by mach, alpha, and altitude again,
+    # but floating point error in DATCOM makes the values in the keys in coeffs
+    # differ from mach, alpha, and altitude
+    coeffs = list(lookup([mach], [alpha], [altitude], cg, mass).values())[0]
+    drag_force = 0.5 * density * (velocity ** 2) * area * coeffs['CD']
 
     net_force = thrust - weight - drag_force
     acc = net_force / mass
