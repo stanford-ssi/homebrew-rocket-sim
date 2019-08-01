@@ -90,8 +90,8 @@ while True:
     cg = 1.2
 
     # CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = coeff_for_conditions(mach, alpha, altitude, cg, mass)
-    CD = 0.5
-    drag_force = 0.5 * density * (velocity ** 2) * area * CD
+    coeffs = lookup(mach, alpha, altitude, cg, mass)
+    drag_force = 0.5 * density * (velocity ** 2) * area * coeffs['CD']
 
     net_force = thrust - weight - drag_force
     acc = net_force / mass

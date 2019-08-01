@@ -1,0 +1,72 @@
+ THIS SOFTWARE AND ANY ACCOMPANYING DOCUMENTATION
+ IS RELEASED "AS IS".  THE U.S. GOVERNMENT MAKES NO
+ WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, CONCERNING
+ THIS SOFTWARE AND ANY ACCOMPANYING DOCUMENTATION,
+ INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OF
+ MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+ IN NO EVENT WILL THE U.S. GOVERNMENT BE LIABLE FOR ANY
+ DAMAGES, INCLUDING LOST PROFITS, LOST SAVINGS OR OTHER
+ INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
+ USE, OR INABILITY TO USE, THIS SOFTWARE OR ANY
+ ACCOMPANYING DOCUMENTATION, EVEN IF INFORMED IN ADVANCE
+ OF THE POSSIBILITY OF SUCH DAMAGES.
+  ****************************************************
+  *    USAF STABILITY AND CONTROL  DIGITAL DATCOM    *
+  *    PROGRAM REV. JAN 96   DIRECT INQUIRIES TO:    *
+  *    WRIGHT LABORATORY  (WL/FIGC)  ATTN: W. BLAKE  *
+  *      WRIGHT PATTERSON AFB, OHIO  45433           *
+  *    PHONE (513) 255-6764,   FAX (513) 258-4054    *
+  ****************************************************
+ Preparing to start the big loop
+ At 1000
+1                         CONERR - INPUT ERROR CHECKING
+0 ERROR CODES - N* DENOTES THE NUMBER OF OCCURENCES OF EACH ERROR
+0 A - UNKNOWN VARIABLE NAME
+0 B - MISSING EQUAL SIGN FOLLOWING VARIABLE NAME
+0 C - NON-ARRAY VARIABLE HAS AN ARRAY ELEMENT DESIGNATION - (N)
+0 D - NON-ARRAY VARIABLE HAS MULTIPLE VALUES ASSIGNED
+0 E - ASSIGNED VALUES EXCEED ARRAY DIMENSION
+0 F - SYNTAX ERROR
+
+0******************************  INPUT DATA CARDS  ******************************
+
+  $FLTCON NMACH=INSERT_NMACH,                                                       ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+          MACH(1)=INSERT_MACHS,                                                     ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+          NALPHA=INSERT_NALPHA,                                                     ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+          ALSCHD(1)=INSERT_ALPHAS,                                                  ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+          NALT=INSERT_NALT,                                                         ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+          ALT(1)=INSERT_ALTS,                                                       ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+          WT=INSERT_WEIGHT,LOOP=3.$                                                 ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+  $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
+  $SYNTHS XCG=INSERT_CG,ZCG=0.0$                                                    ** ERROR **  1*A  0*B  0*C  0*D  0*E  1*F
+  $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
+          X(1)=0.0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,                      
+               0.18,0.20,0.22,0.24,0.26,0.28,0.305,0.914,2.134,                  
+          R(1)=0.0,0.007,0.013,0.019,0.024,0.029,0.033,0.037,0.041,              
+               0.044,0.046,0.048,0.050,0.051,0.052,0.052,0.051,0.051$            
+ DIM M                                                                           
+ DERIV DEG                                                                       
+ CASEID RUN                                                                      
+1          THE FOLLOWING IS A LIST OF ALL INPUT CARDS FOR THIS CASE.
+0
+  $FLTCON NMACH=INSERT_NMACH,                                                    
+          MACH(1)=INSERT_MACHS,                                                  
+          NALPHA=INSERT_NALPHA,                                                  
+          ALSCHD(1)=INSERT_ALPHAS,                                               
+          NALT=INSERT_NALT,                                                      
+          ALT(1)=INSERT_ALTS,                                                    
+          WT=INSERT_WEIGHT,LOOP=3.$                                              
+  $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
+  $SYNTHS XCG=INSERT_CG,ZCG=0.0$                                                 
+  $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
+          X(1)=0.0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,                      
+               0.18,0.20,0.22,0.24,0.26,0.28,0.305,0.914,2.134,                  
+          R(1)=0.0,0.007,0.013,0.019,0.024,0.029,0.033,0.037,0.041,              
+               0.044,0.046,0.048,0.050,0.051,0.052,0.052,0.051,0.051$            
+ DIM M                                                                           
+ DERIV DEG                                                                       
+ CASEID RUN                                                                      
+0*** NAMELIST INPUT ERROR.  CONSTANT DOES NOT MATCH TYPE OF INPUT REQUIRED.
+  $FLTCON NMACH=INSERT_NMACH,                                                    
+                ^                                                                
+0*** EXECUTION TERMINATING DUE TO NAMELIST ERROR.
