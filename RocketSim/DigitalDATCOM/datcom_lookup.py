@@ -20,7 +20,7 @@ def lookup(machs, alphas, alts, cg, mass):
         'INSERT_NMACH': str(len(machs)),
         'INSERT_ALPHAS': ','.join([str(alpha) for alpha in alphas]),
         'INSERT_NALPHA': str(len(alphas)),
-        'INSERT_ALTS': ','.join([str(alpha) for alt in alts]),
+        'INSERT_ALTS': ','.join([str(alt) for alt in alts]),
         'INSERT_NALT': str(len(alts)),
         'INSERT_CG': str(cg),
         'INSERT_WEIGHT': str(mass)
@@ -32,9 +32,8 @@ def lookup(machs, alphas, alts, cg, mass):
     with open(os.path.join(current_dir, INPUT_NAME), 'w') as f:
         f.write(datcom_input)
 
-    command = 'echo {} | {}'.format(
-        os.path.join(current_dir, INPUT_NAME),
-        os.path.join(current_dir, EXEC_NAME))
+    command = 'cd {}; echo {} | ./{}; cd ..'.format(
+        current_dir, INPUT_NAME, EXEC_NAME)
     with open(os.path.join(current_dir, LOG_NAME), 'w') as f:
         subprocess.call(command, shell=True, stdout=f)
 
@@ -58,7 +57,7 @@ def lookup(machs, alphas, alts, cg, mass):
         mach, alt = conds[:2]
         for diff_text in diffs_text.split('\n'):
             entries = [float(diff) for diff in diff_text.split()]
-            values = dict(zip(entries[1:], COLUMNS[1:]))
+            values = dict(zip(COLUMNS[1:], entries[1:]))
             alpha = entries[0]
             coeffs[(mach, alpha, alt)] = values
         datcom_output = datcom_output[diffs_end:]

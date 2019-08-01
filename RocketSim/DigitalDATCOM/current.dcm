@@ -1,12 +1,12 @@
- $FLTCON NMACH=2,
-         MACH(1)=0.1,0.2,
-         NALPHA=2,
-         ALSCHD(1)=0.1,0.2,
-         NALT=2,
-         ALT(1)=0.2,0.2,
-         WT=1,LOOP=3.$
+ $FLTCON NMACH=1,
+         MACH(1)=0.4,
+         NALPHA=1,
+         ALSCHD(1)=1.0,
+         NALT=1,
+         ALT(1)=1740.3214920267974,
+         WT=16,LOOP=3.$
  $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$
- $SYNTHS XCG=1,ZCG=0.0$
+ $SYNTHS XCG=1.2,ZCG=0.0$
  $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,
          X(1)=0.0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,
               0.18,0.20,0.22,0.24,0.26,0.28,0.305,0.914,2.134,

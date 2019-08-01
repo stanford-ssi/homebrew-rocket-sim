@@ -36,6 +36,7 @@ def parse_thrustcurve(fname='Cesaroni_N5800.xml'):
     motor_thrusts = np.interp(sample_times, motor_times, motor_thrusts)
     return (motor_masses, motor_thrusts, sample_times)
 
+
 def get_d_t_for_altitude(altitude):
     output = nrlmsise_output()
     model_input = nrlmsise_input()
@@ -90,8 +91,9 @@ while True:
     cg = 1.2
 
     # CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = coeff_for_conditions(mach, alpha, altitude, cg, mass)
-    coeffs = lookup(mach, alpha, altitude, cg, mass)
-    drag_force = 0.5 * density * (velocity ** 2) * area * coeffs['CD']
+    coeffs = lookup([mach], [alpha], [altitude], cg, mass)
+    import pdb; pdb.set_trace()
+    drag_force = 0.5 * density * (velocity ** 2) * area * coeffs[mach, alpha, altitude]['CD']
 
     net_force = thrust - weight - drag_force
     acc = net_force / mass

@@ -30,15 +30,15 @@
 
 0******************************  INPUT DATA CARDS  ******************************
 
-  $FLTCON NMACH=2,                                                                  ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          MACH(1)=0.1,0.2,                                                       
-          NALPHA=2,                                                                 ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          ALSCHD(1)=0.1,0.2,                                                     
-          NALT=2,                                                                   ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          ALT(1)=0.2,0.2,                                                        
-          WT=1,LOOP=3.$                                                             ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+  $FLTCON NMACH=1,                                                                  ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+          MACH(1)=0.4,                                                           
+          NALPHA=1,                                                                 ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+          ALSCHD(1)=1.0,                                                         
+          NALT=1,                                                                   ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+          ALT(1)=1740.3214920267974,                                             
+          WT=16,LOOP=3.$                                                            ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
-  $SYNTHS XCG=1,ZCG=0.0$                                                            ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+  $SYNTHS XCG=1.2,ZCG=0.0$                                                       
   $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
           X(1)=0.0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,                      
                0.18,0.20,0.22,0.24,0.26,0.28,0.305,0.914,2.134,                  
@@ -49,15 +49,15 @@
  CASEID RUN                                                                      
 1          THE FOLLOWING IS A LIST OF ALL INPUT CARDS FOR THIS CASE.
 0
-  $FLTCON NMACH=2,                                                               
-          MACH(1)=0.1,0.2,                                                       
-          NALPHA=2,                                                              
-          ALSCHD(1)=0.1,0.2,                                                     
-          NALT=2,                                                                
-          ALT(1)=0.2,0.2,                                                        
-          WT=1,LOOP=3.$                                                          
+  $FLTCON NMACH=1,                                                               
+          MACH(1)=0.4,                                                           
+          NALPHA=1,                                                              
+          ALSCHD(1)=1.0,                                                         
+          NALT=1,                                                                
+          ALT(1)=1740.3214920267974,                                             
+          WT=16,LOOP=3.$                                                         
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
-  $SYNTHS XCG=1,ZCG=0.0$                                                         
+  $SYNTHS XCG=1.2,ZCG=0.0$                                                       
   $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
           X(1)=0.0,0.02,0.04,0.06,0.08,0.10,0.12,0.14,0.16,                      
                0.18,0.20,0.22,0.24,0.26,0.28,0.305,0.914,2.134,                  
@@ -81,64 +81,12 @@
   MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
  NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
               M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 0.100       0.20      34.03   1.0132E+05     288.149     2.3189E+06             0.009      0.104     0.104     1.000     0.000
+0 0.400    1740.00     133.41   8.2100E+04     276.843     7.9113E+06             0.009      0.104     0.104     1.200     0.000
 0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
 0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
 0
-    0.1    0.307    0.003    0.0261   0.004    0.307    7.204    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-    0.2    0.307    0.006    0.0523   0.007    0.307    7.204    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-0*** VEHICLE WEIGHT =      1.00 N. 
-0*** LEVEL FLIGHT LIFT COEFFICIENT = 0.69685
-1                               AUTOMATED STABILITY AND CONTROL METHODS PER APRIL 1976 VERSION OF DATCOM
-                                         CHARACTERISTICS AT ANGLE OF ATTACK AND IN SIDESLIP
-                                                   DATCOM BODY ALONE CONFIGURATION
-                                                                RUN
- 
- -----------------------  FLIGHT CONDITIONS  ------------------------           --------------  REFERENCE DIMENSIONS  ------------
-  MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
- NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
-              M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 0.100       0.20      34.03   1.0132E+05     288.149     2.3189E+06             0.009      0.104     0.104     1.000     0.000
-0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
-0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
-0
-    0.1    0.307    0.003    0.0261   0.004    0.307    7.204    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-    0.2    0.307    0.006    0.0523   0.007    0.307    7.204    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-0*** VEHICLE WEIGHT =      4.45 N. 
-0*** LEVEL FLIGHT LIFT COEFFICIENT = 3.09975
-1                               AUTOMATED STABILITY AND CONTROL METHODS PER APRIL 1976 VERSION OF DATCOM
-                                         CHARACTERISTICS AT ANGLE OF ATTACK AND IN SIDESLIP
-                                                   DATCOM BODY ALONE CONFIGURATION
-                                                                RUN
- 
- -----------------------  FLIGHT CONDITIONS  ------------------------           --------------  REFERENCE DIMENSIONS  ------------
-  MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
- NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
-              M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 0.200       0.20      68.05   1.0132E+05     288.149     4.6378E+06             0.009      0.104     0.104     1.000     0.000
-0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
-0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
-0
-    0.1    0.281    0.003    0.0261   0.004    0.281    7.294    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-    0.2    0.281    0.006    0.0523   0.007    0.281    7.294    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-0*** VEHICLE WEIGHT =     19.79 N. 
-0*** LEVEL FLIGHT LIFT COEFFICIENT = 3.44709
-1                               AUTOMATED STABILITY AND CONTROL METHODS PER APRIL 1976 VERSION OF DATCOM
-                                         CHARACTERISTICS AT ANGLE OF ATTACK AND IN SIDESLIP
-                                                   DATCOM BODY ALONE CONFIGURATION
-                                                                RUN
- 
- -----------------------  FLIGHT CONDITIONS  ------------------------           --------------  REFERENCE DIMENSIONS  ------------
-  MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
- NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
-              M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 0.200       0.20      68.05   1.0132E+05     288.149     4.6378E+06             0.009      0.104     0.104     1.000     0.000
-0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
-0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
-0
-    0.1    0.281    0.003    0.0261   0.004    0.281    7.294    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-    0.2    0.281    0.006    0.0523   0.007    0.281    7.294    3.092E-02    2.613E-01   -3.092E-02   -2.613E-01    0.000E+00
-0*** VEHICLE WEIGHT =     88.02 N. 
-0*** LEVEL FLIGHT LIFT COEFFICIENT =15.33342
+    1.0    0.263    0.031    0.3208   0.036    0.263    9.034    3.092E-02    3.208E-01   -3.092E-02   -3.208E-01    0.000E+00
+0*** VEHICLE WEIGHT =     16.00 N. 
+0*** LEVEL FLIGHT LIFT COEFFICIENT = 0.86001
  Return to main program from M57O71
 1 END OF JOB.
