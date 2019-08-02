@@ -11,6 +11,8 @@ COLUMNS = ['ALPHA', 'CD', 'CL', 'CM', 'CN', 'CA', 'XCP',
            'CLA', 'CMA', 'CYB', 'CNB', 'CLB']
 
 def lookup(machs, alphas, alts, cg, mass):
+    """ Prepares an appropriate input, runs the DATCOM executable, and parses the output values. Stores in a .npz file, with dictionary structure. Keys = (mach,alpha,alt), Values = {'coefficient':value}. TODO: sort before saving, or insert new values while keeping file sorted
+    """
     current_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(current_dir, TEMPLATE_NAME), 'r') as f:
         datcom_input = f.read()
@@ -59,10 +61,9 @@ def lookup(machs, alphas, alts, cg, mass):
             entries = [float(diff) for diff in diff_text.split()]
             values = dict(zip(COLUMNS[1:], entries[1:]))
             alpha = entries[0]
-            coeffs[(mach, alpha, alt)] = values
+            coeffs[(mach,alpha,alt)] = values
         datcom_output = datcom_output[diffs_end:]
 
     return coeffs
-
-
-# print(lookup([0.1, 0.2], [0.1, 0.2], [100, 200], 1, 1))
+save_a = lookup([0.1,0.2,0.3,0.4,0.5,0.6,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.5,3.0,3.5],[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0],[26000,32526.32,39052.63,45578.95,52105.26,58631.58,65157.89,71684.21,78210.53,84736.84,91263.16,97789.47,104315.79,110842.11,117368.42,123894.74,130421.05,136947.37,143473.68,150000],1.2,16)
+np.savez('LookupTableTest.npz',save_a)
