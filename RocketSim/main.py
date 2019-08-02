@@ -56,81 +56,21 @@ def get_d_t_for_altitude(altitude):
     return output.d[5] * 1000, output.t[1]  # total air density in KG/M^3
 
 def loadDATCOM(fname='LookupTableTest.npz'):
-    """ Load in the .npz file with the aerodynamic coefficients, and sort the keys for easy access during timestepping.
+    """ Load in the .npz file with the aerodynamic coefficients.
     """
-    global mach_keys
-    global alpha_keys
-    global alt_keys
     with np.load(fname,allow_pickle=True) as data:
         global coeff_data
         coeff_data=data['arr_0'][()]
-    mach_keys, alpha_keys, alt_keys = zip(*coeff_data.keys())
 
-    mach_keys = np.unique(mach_keys)
-    alpha_keys = np.unique(alpha_keys)
-    alt_keys = np.unique(alt_keys)
+def coeff_for_conditions(mach, alpha, altitude, cg, mass):
+    x,y,z = zip(*coeff_data.keys())
+    interpolated = {key: 0 for key in coeff_data[0].keys()}
+    for value in coeff_data.values():
+        griddata((x,y,z),,(mach,alpha,altitude))
 
-def find_nearest(array,value):
-    """ Helper method that finds the nearest value in a sorted array and returns the index.
-    """
-    idx = np.searchsorted(array, value, side="left")
-    if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
-        return idx-1,array[idx-1]
-    else:
-        return idx,array[idx]
-
-def coeff_for_conditions(mach, alpha, alt):
-    """ Helper method to retrieve coefficients. Given keys, it finds the nearest corresponding precalculated DATCOM value, and does a simple linear interpolation between the two.
-    """
-    nearest_mach_idx,nearest_mach = find_nearest(mach_keys,mach)
-    nearest_alpha_idx,nearest_alpha = find_nearest(alpha_keys,alpha)
-    nearest_alt_idx,nearest_alt = find_nearest(alt_keys,alt)
-
-    if nearest_mach>mach:
-        mach_1 = mach_keys[nearest_mach_idx-1]
-        mach_2 = mach_keys[nearest_mach_idx]
-    else:
-        mach_1 = mach_keys[nearest_mach_idx]
-        mach_2 = mach_keys[nearest_mach_idx+1]
-
-    if nearest_alpha>alpha:
-        alpha_1 = alpha_keys[nearest_alpha_idx-1]
-        alpha_2 = alpha_keys[nearest_alpha_idx]
-    else:
-        alpha_1 = alpha_keys[nearest_alpha_idx]
-        alpha_2 = alpha_keys[nearest_alpha_idx+1]
-
-    if nearest_alt>alt:
-        alt_1 = alt_keys[nearest_alt_idx-1]
-        alt_2 = alt_keys[nearest_alt_idx]
-    else:
-        alt_1 = alt_keys[nearest_alt_idx]
-        alt_2 = alt_keys[nearest_alt_idx+1]
-
-    x = np.array([mach_1,mach_2])
-    y = np.array([alpha_1,alpha_2])
-    z = np.array([alt_1,alt_2])
-    c1 = coeff_data[(mach_1,alpha_1,alt_1)]
-    c2 = coeff_data[(mach_2,alpha_2,alt_2)]
-
-    interpolated = {key: 0 for key in c1.keys()}
-
-    for key in c1.keys():
-        f = np.array([c1[key],c2[key]])
-        dfdx = (f[1]-f[0])/(x[1]-x[0])
-        dfdy = (f[1]-f[0])/(y[1]-y[0])
-        dfdz = (f[1]-f[0])/(z[1]-z[0])
-        print f[0], f[1], x[0],x[1], dfdx, mach
-        interpolated[key]=f[0]+(dfdx*(mach-x[0]))+(dfdy*(alpha-y[0]))+(dfdz*(alt-z[0]))
-    return interpolated
-
-loadDATCOM()
-print coeff_for_conditions(0.52,0.2,26500)
-'''
 
 motor_masses, motor_thrusts, sample_times = parse_thrustcurve()
 loadDATCOM()
-
 
 while True:
     times.append(time)
@@ -160,7 +100,6 @@ while True:
     cg = 1.2
 
     coeffs = coeff_for_conditions(mach, alpha, altitude, cg, mass)
-
     drag_force = 0.5 * density * (velocity ** 2) * area * coeffs['CD']
 
     net_force = thrust - weight - drag_force
@@ -180,4 +119,3 @@ while True:
 
 plt.plot(times,positions)
 plt.show()
-'''
