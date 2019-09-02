@@ -3,14 +3,14 @@ import time
 import numpy as np
 import quaternion
 import matplotlib.pyplot as plt
+import xml.etree.ElementTree as ET
+
 from NRLMSISE00.nrlmsise_00_header import *
 from NRLMSISE00.nrlmsise_00 import *
 from DigitalDATCOM.datcom_lookup import lookup
-import xml.etree.ElementTree as ET
-from scipy.interpolate import griddata
 
 
-def parse_thrustcurve(fname='Cesaroni_N5800.xml'):
+def parse_thrust_curve(fname, time_step):
     tree = ET.parse(fname)
     root = tree.getroot()
     motor_masses = []
@@ -24,18 +24,18 @@ def parse_thrustcurve(fname='Cesaroni_N5800.xml'):
     sample_times = time_step * np.arange(0, np.ceil(burn_time / time_step))
     motor_masses = np.interp(sample_times, motor_times, motor_masses)
     motor_thrusts = np.interp(sample_times, motor_times, motor_thrusts)
-    return (motor_masses, motor_thrusts, sample_times)
+    return motor_masses, motor_thrusts, sample_times
 
 
-def get_d_t_for_altitude(altitude):
+def get_atmospheric_properties(altitude):
     output = nrlmsise_output()
     model_input = nrlmsise_input()
     flags = nrlmsise_flags()
     aph = ap_array()
     flags.switches[0] = 0  # output in MKS
     model_input.alt = altitude / 1000  # convert to km
-    model_input.g_lat = 32.990371  # Spaceport america
-    model_input.g_long= -106.975116
+    model_input.g_lat = 32.990371  # Spaceport America
+    model_input.g_long = -106.975116
     for i in range(7):
         aph.a[i] = 100
     for i in range(1, 24):
@@ -44,31 +44,49 @@ def get_d_t_for_altitude(altitude):
     return output.d[5] * 1000, output.t[1]  # total air density in KG/M^3
 
 
-positions, velocities, accelerations, times = [], [], [], []
-motor_masses, motor_thrusts, sample_times = parse_thrustcurve()
+times, positions = [], []
 
-M = 16                              # rocket mass, kg
+dt = 0.1                            # timestep, s
+curve_vals = parse_thrust_curve(
+    'Cesaroni_N5800.xml', dt)
+M_ms, T_ms, _ = curve_vals          # rocket masses, kg,
+                                    # ... and rocket thrusts, N
+curve_index = 0                     # index for previous two
+
+M_r = 16                            # rocket mass, kg
+X_cp = 0.25                         # rocket center of pressure
+                                    # ...from nose tip, m
+X_cm = 0.5                          # rocket center of gravity
+                                    # ...from nose tip, m
 M_E = 5.974E24                      # Earth mass, kg
 r_E = 6378100                       # Earth radius, m
-m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da 
 
 Y_A0 = np.array([1.0, 0.0, 0.0])    # yaw axis
 P_A0 = np.array([0.0, 1.0, 0.0])    # pitch axis
 R_A0 = np.array([0.0, 0.0, 1.0])    # roll axis
+m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da 
 
 t = 0.0                             # time, s
+X = np.array([0.0, 0.0, 0.0])       # position relative to ground, m
 P = np.array([0.0, 0.0, 0.0])       # momentum, kg * m/s
 L = np.array([0.0, 0.0, 0.0])       # angular momentum, kg * m^2/s
 Q = np.quaternion(1, 0, 0, 0)       # rotation quaternion
                                     # ...(rotation relative to pointing
                                     # ...directly upward)
-X = np.array([0.0, 0.0, 0.0])       # position relative to ground, m
 I_0 = np.diag([1.0, 1.0, 1.0])      # moments of inertia, kg * m^2
+                                    # ...(in x, y, and z direction resp.)
 W = 0.0                             # wind velocity, m/s
 
-# TODO: define X_cp, X_cm, T
-
 while True:
+    times.append(t)
+    positions.append(X)
+
+    M = M_r                                    # total mass
+    T = 0                                      # thrust
+    if curve_index < len(M_ms):                # if motor isn't spent:
+        M += M_ms[curve_index]                 # add motor mass
+        T = T_ms[curve_index]                  # set thrust
+
     X_dot = P / M                              # derivative of position
     R = Q.as_rotation_matrix()                 # rotation matrix
     R_A = np.dot(R, R_A0.T)                    # unit vector in roll axis 
@@ -111,29 +129,15 @@ while True:
                                                # ...rocket's rotation)
     tau = tau_N + tau_da                       # total torque
 
+    # TODO: calculate drag coefficients as in 1D case
+    # TODO: compute updates
+    # TODO: handle crash
+
+    t += dt
+
 
 
 '''
-while True:
-    times.append(time)
-    positions.append(altitude)
-    velocities.append(velocity)
-    accelerations.append(acc)
-    time += time_step
-
-    thrust = 0
-    mass = rocket_mass
-
-    try:
-        idx = np.where(np.isclose(sample_times, time))[0][0]
-    except IndexError:
-        idx = None
-
-    if idx is not None:
-        mass += motor_masses[idx]
-        thrust += motor_thrusts[idx]
-
-    weight = mass * g
     density, temperature = get_d_t_for_altitude(altitude)
     mach = velocity / (20.05 * np.sqrt(temperature))
 
@@ -164,5 +168,5 @@ while True:
 
 '''
 
-plt.plot(times,positions)
+plt.plot(times, positions)
 plt.show()
