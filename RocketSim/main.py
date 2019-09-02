@@ -167,21 +167,5 @@ while True:
         positions.append(X)
         break
 
-
-'''
-    density, temperature = get_d_t_for_altitude(altitude)
-    mach = velocity / (20.05 * np.sqrt(temperature))
-
-    mach = 0.4
-    alpha = 1.0
-    cg = 1.2
-
-    # We could look up the coefficients by mach, alpha, and altitude again,
-    # but floating point error in DATCOM makes the values in the keys in coeffs
-    # differ from mach, alpha, and altitude
-    coeffs = list(lookup([mach], [alpha], [altitude], cg, mass).values())[0]
-    drag_force = 0.5 * density * (velocity ** 2) * area * coeffs['CD']
-'''
-
 plt.plot(times, positions)
 plt.show()
