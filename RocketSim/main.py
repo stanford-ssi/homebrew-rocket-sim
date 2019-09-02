@@ -67,12 +67,12 @@ R_A0 = np.array([0.0, 0.0, 1.0])    # roll axis
 m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da 
 
 t = 0.0                             # time, s
-X = np.array([0.0, 0.0, 0.0])       # position relative to ground, m
 P = np.array([0.0, 0.0, 0.0])       # momentum, kg * m/s
 L = np.array([0.0, 0.0, 0.0])       # angular momentum, kg * m^2/s
 Q = np.quaternion(1, 0, 0, 0)       # rotation quaternion
                                     # ...(rotation relative to pointing
                                     # ...directly upward)
+X = np.array([0.0, 0.0, 0.0])       # position relative to ground, m
 I_0 = np.diag([1.0, 1.0, 1.0])      # moments of inertia, kg * m^2
                                     # ...(in x, y, and z direction resp.)
 W = 0.0                             # wind velocity, m/s
@@ -130,11 +130,20 @@ while True:
     tau = tau_N + tau_da                       # total torque
 
     # TODO: calculate drag coefficients as in 1D case
-    # TODO: compute updates
-    # TODO: handle crash
 
-    t += dt
+    P += F * dt             # update momentum
+    L += tau * dt           # update angular momentum
+    Q.w += s_dot * dt       # update real part of quaternion
+    Q.x += v_dot[0] * dt    # update rest of quaternion
+    Q.y += v_dot[1] * dt
+    Q.z += v_dot[2] * dt
+    X += X_dot * dt         # update position
+    t += dt                 # update time
 
+    if X[2] < 0:  # if our z coordinate is underground
+        times.append(t)
+        positions.append(X)
+        break
 
 
 '''
@@ -150,22 +159,6 @@ while True:
     # differ from mach, alpha, and altitude
     coeffs = list(lookup([mach], [alpha], [altitude], cg, mass).values())[0]
     drag_force = 0.5 * density * (velocity ** 2) * area * coeffs['CD']
-
-    net_force = thrust - weight - drag_force
-    acc = net_force / mass
-    delta_v = acc * time_step
-    velocity += delta_v
-    delta_x = velocity * time_step
-    altitude += delta_x
-    print(altitude)
-
-    if altitude < 0:
-        times.append(time)
-        positions.append(altitude)
-        velocities.append(velocity)
-        accelerations.append(acc)
-        break
-
 '''
 
 plt.plot(times, positions)
