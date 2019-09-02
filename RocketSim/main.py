@@ -44,6 +44,11 @@ def get_atmospheric_properties(altitude):
     return output.d[5] * 1000, output.t[1]  # total air density in KG/M^3
 
 
+def safe_normalize(v):
+    norm = np.linalg.norm(v)
+    return v / norm if norm > 0 else v
+
+
 times, positions = [], []
 
 dt = 0.1                            # timestep, s
@@ -77,6 +82,7 @@ X = np.array([0.0, 0.0, 0.0])       # position relative to ground, m
 I_0 = np.diag([1.0, 1.0, 1.0])      # moments of inertia, kg * m^2
                                     # ...(in x, y, and z direction resp.)
 W = 0.0                             # wind velocity, m/s
+C_da = 0.0                          # damping coefficient (TODO: calculate)
 
 while True:
     times.append(t)
@@ -99,14 +105,14 @@ while True:
         s * omega + np.cross(omega, v))        # derivative of the rest
 
     V_cm = X_dot + W                           # velocity of center of mass
-    omega_hat = omega / np.linalg.norm(omega)  # normalized angular velocity
+    omega_hat = safe_normalize(omega)          # normalized angular velocity
     X_bar = np.abs(X_cp - X_cm)
     V_omega = X_bar * np.sin(
         np.arccos(np.dot(R_A, omega_hat)) *
                   np.cross(R_A, omega))        # velocity of center of pressure
                                                # ...due to angular velocity
     V = V_cm + V_omega                         # total velocity
-    V_hat = V / np.linalg.norm(V)              # normalized velocity
+    V_hat = safe_normalize(V)                  # normalized velocity
     alpha = np.arccos(np.dot(V_hat, R_A))      # angle of attack
 
     F_T = -T * R_A                             # force due to thrust
@@ -117,31 +123,34 @@ while True:
 
     mach = np.linalg.norm(V) / (
         20.05 * np.sqrt(temp))                 # mach number (TODO: match paper)
-    lookup_results = lookup(
-        [mach], [alpha], [z],
-        X_cm, M)                               # DATCOM lookup results
-    import pdb; pdb.set_trace()
-    coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
-    C_A, C_N = coeffs['CA'], coeffs['CN']      # axial and normal aerodynamic
-                                               # ...coefficients
-    F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
-                                               # ...aerodynamic force
-    F_A = -F_A_mag * R_A                       # axial aerodynamic force
-    F_N_mag = 0.5 * rho * V ** 2 * A_RB * C_N  # magnitude of normal 
-                                               # ...aerodynamic force
-    F_N = F_N_mag * np.cross(
-        R_A, np.cross(R_A, V_hat))             # normal aerodynamic force
-    F = F_T + F_g + F_A + F_n                  # total force
+    if mach > 0:                               # if we're moving
+        lookup_results = lookup(
+            [mach], [alpha], [z],
+            X_cm, M)                               # DATCOM lookup results
+        coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
+        C_A, C_N = coeffs['CA'], coeffs['CN']      # axial and normal aerodynamic
+                                                   # ...coefficients
+        F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
+                                                   # ...aerodynamic force
+        F_A = -F_A_mag * R_A                       # axial aerodynamic force
+        F_N_mag = 0.5 * rho * V ** 2 * A_RB * C_N  # magnitude of normal 
+                                                   # ...aerodynamic force
+        F_N = F_N_mag * np.cross(
+            R_A, np.cross(R_A, V_hat))             # normal aerodynamic force
+    else:                                          # don't DATCOM at mach zero
+        F_A = np.array([0.0, 0.0, 0.0])            # axial aerodynamic force 
+        F_N_mag = 0.0
+        F_N = np.array([0.0, 0.0, 0.0])            # normal aerodynamic force
+
+    F = F_T + F_g + F_A + F_N                  # total force
 
     tau_N = (F_N_mag * X_bar *
              np.cross(R_A, V_hat))             # torque caused by normal force 
     tau_da = -C_da * np.linalg.multi_dot(
-        R, m, np.linalg.inv(R), omega)         # torque due to thrust damping
+        (R, m, np.linalg.inv(R), omega))       # torque due to thrust damping
                                                # ...(thrust slowing the
                                                # ...rocket's rotation)
     tau = tau_N + tau_da                       # total torque
-
-    # TODO: calculate drag coefficients as in 1D case
 
     P += F * dt             # update momentum
     L += tau * dt           # update angular momentum
