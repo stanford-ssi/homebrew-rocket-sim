@@ -9,16 +9,6 @@ from DigitalDATCOM.datcom_lookup import lookup
 import xml.etree.ElementTree as ET
 from scipy.interpolate import griddata
 
-# All SI units
-rocket_mass = 16  # not including motor
-time_step = 3
-c_d = 0.5
-area = 0.00258064
-altitude = 0
-g = 9.8
-time, velocity, acc = 0, 0, 0
-positions, velocities, accelerations, times = [], [], [], []
-
 
 def parse_thrustcurve(fname='Cesaroni_N5800.xml'):
     tree = ET.parse(fname)
@@ -53,16 +43,77 @@ def get_d_t_for_altitude(altitude):
     gtd7(model_input, flags, output)
     return output.d[5] * 1000, output.t[1]  # total air density in KG/M^3
 
-# def loadDATCOM():
-#     f = readPickle()
 
-# def coeff_for_conditions(mach, alpha, altitude, cg, mass):
-#     loadDATCOM()
-#     return CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB
-
+positions, velocities, accelerations, times = [], [], [], []
 motor_masses, motor_thrusts, sample_times = parse_thrustcurve()
-# loadDATCOM()
 
+M = 16                              # rocket mass, kg
+M_E = 5.974E24                      # Earth mass, kg
+r_E = 6378100                       # Earth radius, m
+m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da 
+
+Y_A0 = np.array([1.0, 0.0, 0.0])    # yaw axis
+P_A0 = np.array([0.0, 1.0, 0.0])    # pitch axis
+R_A0 = np.array([0.0, 0.0, 1.0])    # roll axis
+
+t = 0.0                             # time, s
+P = np.array([0.0, 0.0, 0.0])       # momentum, kg * m/s
+L = np.array([0.0, 0.0, 0.0])       # angular momentum, kg * m^2/s
+Q = np.quaternion(1, 0, 0, 0)       # rotation quaternion
+                                    # ...(rotation relative to pointing
+                                    # ...directly upward)
+X = np.array([0.0, 0.0, 0.0])       # position relative to ground, m
+I_0 = np.diag([1.0, 1.0, 1.0])      # moments of inertia, kg * m^2
+W = 0.0                             # wind velocity, m/s
+
+# TODO: define X_cp, X_cm, T
+
+while True:
+    X_dot = P / M                              # derivative of position
+    R = Q.as_rotation_matrix()                 # rotation matrix
+    R_A = np.dot(R, R_A0.T)                    # unit vector in roll axis 
+    omega = np.linalg.multi_dot(
+        R, np.linalg.inv(I_0), R.T, L.T)       # angular velocity
+    s, v = Q.w, np.array([Q.x, Q.y, Q.z])      # components of quaternion
+    s_dot = 0.5 * np.dot(omega, v)             # derivative of real part
+    v_dot = 0.5 * (
+        s * omega + np.cross(omega, v))        # derivative of the rest
+
+    V_cm = X_dot + W                           # velocity of center of mass
+    omega_hat = omega / np.linalg.norm(omega)  # normalized angular velocity
+    X_bar = np.abs(X_cp - X_cm)
+    V_omega = X_bar * np.sin(
+        np.arccos(np.dot(R_A, omega_hat)) *
+                  np.cross(R_A, omega))        # velocity of center of pressure
+                                               # ...due to angular velocity
+    V = V_cm + V_omega                         # total velocity
+    V_hat = V / np.linalg.norm(V)              # normalized velocity
+    alpha = np.arccos(np.dot(V_hat, R_A))      # angle of attack
+
+    F_T = -T * R_A                             # force due to thrust
+    g = M_E / (r_E + z) ** 2                   # gravitational acceleration
+    F_g = np.array([0, 0, -M * g])             # force due to gravity
+    F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
+                                               # ...aerodynamic force
+    F_A = -F_A_mag * R_A                       # axial aerodynamic force
+
+    F_N_mag = 0.5 * rho * V ** 2 * A_RB * C_N  # magnitude of normal 
+                                               # ...aerodynamic force
+    F_N = F_N_mag * np.cross(
+        R_A, np.cross(R_A, V_hat))             # normal aerodynamic force
+    F = F_T + F_g + F_A + F_n                  # total force
+
+    tau_N = (F_N_mag * X_bar *
+             np.cross(R_A, V_hat))             # torque caused by normal force 
+    tau_da = -C_da * np.linalg.multi_dot(
+        R, m, np.linalg.inv(R), omega)         # torque due to thrust damping
+                                               # ...(thrust slowing the
+                                               # ...rocket's rotation)
+    tau = tau_N + tau_da                       # total torque
+
+
+
+'''
 while True:
     times.append(time)
     positions.append(altitude)
@@ -90,8 +141,6 @@ while True:
     alpha = 1.0
     cg = 1.2
 
-    # CD,CL,CM,CN,CA,XCP,CLA,CMA,CYB,CNB,CLB = coeff_for_conditions(mach, alpha, altitude, cg, mass)
-
     # We could look up the coefficients by mach, alpha, and altitude again,
     # but floating point error in DATCOM makes the values in the keys in coeffs
     # differ from mach, alpha, and altitude
@@ -112,6 +161,8 @@ while True:
         velocities.append(velocity)
         accelerations.append(acc)
         break
+
+'''
 
 plt.plot(times,positions)
 plt.show()
