@@ -35,6 +35,7 @@ def lookup(machs, alphas, alts, cg, mass):
     command = 'cd {}; echo {} | ./{}; cd ..'.format(
         current_dir, INPUT_NAME, EXEC_NAME)
     with open(os.path.join(current_dir, LOG_NAME), 'w') as f:
+        # TODO this is the line that breaks things a bit: command's ./ ends up as "." and Windows doesn't recognise that as run
         subprocess.call(command, shell=True, stdout=f)
 
     with open(os.path.join(current_dir, OUTPUT_NAME), 'r') as f:

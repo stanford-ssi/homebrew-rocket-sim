@@ -840,7 +840,7 @@ def glob7s(p, Input, flags):
     if (p[99]==0):
         p[99]=pset;
     if (p[99]!=pset):
-        printf("Wrong parameter set for glob7s\n");
+        print("Wrong parameter set for glob7s\n");
         return -1;
     
     #for j in range(14):    #Already taken care of
