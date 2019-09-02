@@ -58,6 +58,7 @@ X_cp = 0.25                         # rocket center of pressure
                                     # ...from nose tip, m
 X_cm = 0.5                          # rocket center of gravity
                                     # ...from nose tip, m
+A_RB = 0.0013                       # rocket cross-sectional area, m^2
 M_E = 5.974E24                      # Earth mass, kg
 r_E = 6378100                       # Earth radius, m
 
@@ -88,10 +89,10 @@ while True:
         T = T_ms[curve_index]                  # set thrust
 
     X_dot = P / M                              # derivative of position
-    R = Q.as_rotation_matrix()                 # rotation matrix
+    R = quaternion.as_rotation_matrix(Q)       # rotation matrix
     R_A = np.dot(R, R_A0.T)                    # unit vector in roll axis 
     omega = np.linalg.multi_dot(
-        R, np.linalg.inv(I_0), R.T, L.T)       # angular velocity
+        (R, np.linalg.inv(I_0), R.T, L.T))     # angular velocity
     s, v = Q.w, np.array([Q.x, Q.y, Q.z])      # components of quaternion
     s_dot = 0.5 * np.dot(omega, v)             # derivative of real part
     v_dot = 0.5 * (
@@ -109,12 +110,23 @@ while True:
     alpha = np.arccos(np.dot(V_hat, R_A))      # angle of attack
 
     F_T = -T * R_A                             # force due to thrust
+    z = X[2]                                   # z-coordinate of position
     g = M_E / (r_E + z) ** 2                   # gravitational acceleration
     F_g = np.array([0, 0, -M * g])             # force due to gravity
+    rho, temp = get_atmospheric_properties(z)  # air density
+
+    mach = np.linalg.norm(V) / (
+        20.05 * np.sqrt(temp))                 # mach number (TODO: match paper)
+    lookup_results = lookup(
+        [mach], [alpha], [z],
+        X_cm, M)                               # DATCOM lookup results
+    import pdb; pdb.set_trace()
+    coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
+    C_A, C_N = coeffs['CA'], coeffs['CN']      # axial and normal aerodynamic
+                                               # ...coefficients
     F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
                                                # ...aerodynamic force
     F_A = -F_A_mag * R_A                       # axial aerodynamic force
-
     F_N_mag = 0.5 * rho * V ** 2 * A_RB * C_N  # magnitude of normal 
                                                # ...aerodynamic force
     F_N = F_N_mag * np.cross(
@@ -140,7 +152,8 @@ while True:
     X += X_dot * dt         # update position
     t += dt                 # update time
 
-    if X[2] < 0:  # if our z coordinate is underground
+    z = X[2]                # get the z-coordinate
+    if z < 0:               # if it's underground
         times.append(t)
         positions.append(X)
         break
