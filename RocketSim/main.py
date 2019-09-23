@@ -115,12 +115,20 @@ while True:
     V = V_cm + V_omega                         # total velocity
     V_hat = safe_normalize(V)                  # normalized velocity
     alpha = np.arccos(np.dot(V_hat, R_A))      # angle of attack
+                                               # TODO: fix reference angles to mesh with
+                                               # DATCOM (default angle should be pi/2)
 
-    F_T = -T * R_A                             # force due to thrust
+    F_T = T * R_A                              # force due to thrust
+                                               # ...(note by differing
+                                               # ...conventions we lose a
+                                               # ...minus sign from the paper)
+
     z = X[2]                                   # z-coordinate of position
     g = G * M_E / (r_E + z) ** 2               # gravitational acceleration
                                                # ...(note typo in paper omits G)
-    F_g = np.array([0, 0, -M * g])             # force due to gravity
+    F_g = np.array([0.0, 0.0, 0.0])
+    if z > 0:                                  # accounting for normal force
+        F_g[2] = -M * g                        # force due to gravity
     rho, temp = get_atmospheric_properties(z)  # air density
 
     mach = np.linalg.norm(V) / (
@@ -132,6 +140,10 @@ while True:
         coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
         C_A, C_N = coeffs['CA'], coeffs['CN']      # axial and normal aerodynamic
                                                    # ...coefficients
+                                                   # TODO: gracefully handle NaNs
+                                                   # (altitude = 0)
+        if np.isnan(C_N):
+            import pdb; pdb.set_trace()
         F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
                                                    # ...aerodynamic force
         F_A = -F_A_mag * R_A                       # axial aerodynamic force

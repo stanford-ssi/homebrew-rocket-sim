@@ -31,12 +31,12 @@
 0******************************  INPUT DATA CARDS  ******************************
 
   $FLTCON NMACH=1,                                                                  ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          MACH(1)=0.002900769340089438,                                          
+          MACH(1)=0.0777954525045605,                                            
           NALPHA=1,                                                                 ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          ALSCHD(1)=3.141592653589793,                                           
+          ALSCHD(1)=0.0,                                                         
           NALT=1,                                                                   ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
           ALT(1)=0.0,                                                            
-          WT=25.14535111111111,LOOP=3.$                                          
+          WT=24.83826131672598,LOOP=3.$                                          
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
   $SYNTHS XCG=0.5,ZCG=0.0$                                                       
   $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
@@ -50,12 +50,12 @@
 1          THE FOLLOWING IS A LIST OF ALL INPUT CARDS FOR THIS CASE.
 0
   $FLTCON NMACH=1,                                                               
-          MACH(1)=0.002900769340089438,                                          
+          MACH(1)=0.0777954525045605,                                            
           NALPHA=1,                                                              
-          ALSCHD(1)=3.141592653589793,                                           
+          ALSCHD(1)=0.0,                                                         
           NALT=1,                                                                
           ALT(1)=0.0,                                                            
-          WT=25.14535111111111,LOOP=3.$                                          
+          WT=24.83826131672598,LOOP=3.$                                          
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
   $SYNTHS XCG=0.5,ZCG=0.0$                                                       
   $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
@@ -85,8 +85,8 @@
 0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
 0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
 0
-    3.0      NaN    0.093    0.3380     NaN      NaN      NaN    3.092E-02    1.127E-01   -3.092E-02   -1.127E-01    0.000E+00
-0*** VEHICLE WEIGHT =     25.00 N. 
+    0.0      NaN    0.000    0.0000     NaN      NaN      NaN    3.092E-02    1.127E-01   -3.092E-02   -1.127E-01    0.000E+00
+0*** VEHICLE WEIGHT =     24.00 N. 
 0*** LEVEL FLIGHT LIFT COEFFICIENT =********
  Return to main program from M57O71
 1 END OF JOB.
