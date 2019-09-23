@@ -87,7 +87,7 @@ C_da = 0.0                          # damping coefficient (TODO: calculate)
 
 while True:
     times.append(t)
-    positions.append(X)
+    positions.append(tuple(X))
 
     M = M_r                                    # total mass
     T = 0                                      # thrust
@@ -126,7 +126,6 @@ while True:
     mach = np.linalg.norm(V) / (
         20.05 * np.sqrt(temp))                 # mach number (TODO: match paper)
     if mach > 0:                               # if we're moving
-        import pdb; pdb.set_trace()
         lookup_results = lookup(
             [mach], [alpha], [z],
             X_cm, M)                               # DATCOM lookup results
@@ -168,8 +167,11 @@ while True:
     z = X[2]                # get the z-coordinate
     if z < 0:               # if it's underground
         times.append(t)
-        positions.append(X)
+        positions.append(tuple(X))
         break
 
-plt.plot(times, positions)
-plt.show()
+# plt.plot(times, positions)
+# plt.show()
+
+print(positions)
+import pdb; pdb.set_trace()
