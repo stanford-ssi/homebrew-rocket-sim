@@ -10,6 +10,13 @@ EXEC_NAME = 'datcom'
 COLUMNS = ['ALPHA', 'CD', 'CL', 'CM', 'CN', 'CA', 'XCP',
            'CLA', 'CMA', 'CYB', 'CNB', 'CLB']
 
+
+def parse_float(text):
+    if '*' in text:
+        return None
+    else:
+        return float(text)
+
 def lookup(machs, alphas, alts, cg, mass):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(current_dir, TEMPLATE_NAME), 'r') as f:
@@ -53,10 +60,10 @@ def lookup(machs, alphas, alts, cg, mass):
 
         conds_text = datcom_output[conds_start:conds_end]
         diffs_text = datcom_output[diffs_start:diffs_end]
-        conds = [float(cond) for cond in conds_text.split()]
+        conds = [parse_float(cond) for cond in conds_text.split()]
         mach, alt = conds[:2]
         for diff_text in diffs_text.split('\n'):
-            entries = [float(diff) for diff in diff_text.split()]
+            entries = [parse_float(diff) for diff in diff_text.split()]
             values = dict(zip(COLUMNS[1:], entries[1:]))
             alpha = entries[0]
             coeffs[(mach, alpha, alt)] = values

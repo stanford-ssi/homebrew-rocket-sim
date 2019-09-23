@@ -66,6 +66,7 @@ X_cm = 0.5                          # rocket center of gravity
 A_RB = 0.0013                       # rocket cross-sectional area, m^2
 M_E = 5.974E24                      # Earth mass, kg
 r_E = 6378100                       # Earth radius, m
+G = 6.673E-11                       # Gravitational constant, m^3/(kg * s)
 
 Y_A0 = np.array([1.0, 0.0, 0.0])    # yaw axis
 P_A0 = np.array([0.0, 1.0, 0.0])    # pitch axis
@@ -117,13 +118,15 @@ while True:
 
     F_T = -T * R_A                             # force due to thrust
     z = X[2]                                   # z-coordinate of position
-    g = M_E / (r_E + z) ** 2                   # gravitational acceleration
+    g = G * M_E / (r_E + z) ** 2               # gravitational acceleration
+                                               # ...(note typo in paper omits G)
     F_g = np.array([0, 0, -M * g])             # force due to gravity
     rho, temp = get_atmospheric_properties(z)  # air density
 
     mach = np.linalg.norm(V) / (
         20.05 * np.sqrt(temp))                 # mach number (TODO: match paper)
     if mach > 0:                               # if we're moving
+        import pdb; pdb.set_trace()
         lookup_results = lookup(
             [mach], [alpha], [z],
             X_cm, M)                               # DATCOM lookup results
@@ -160,6 +163,7 @@ while True:
     Q.z += v_dot[2] * dt
     X += X_dot * dt         # update position
     t += dt                 # update time
+    curve_index += 1
 
     z = X[2]                # get the z-coordinate
     if z < 0:               # if it's underground
