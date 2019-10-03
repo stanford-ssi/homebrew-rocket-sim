@@ -134,14 +134,19 @@ while True:
     mach = np.linalg.norm(V) / (
         20.05 * np.sqrt(temp))                 # mach number (TODO: match paper)
     if mach > 0:                               # if we're moving
+        angle_of_attack = 0.0
+        print(mach, angle_of_attack, z)
+        import pdb; pdb.set_trace()
         lookup_results = lookup(
-            [mach], [alpha], [z],
+            [mach], [angle_of_attack], [z],
             X_cm, M)                               # DATCOM lookup results
         coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
         C_A, C_N = coeffs['CA'], coeffs['CN']      # axial and normal aerodynamic
                                                    # ...coefficients
                                                    # TODO: gracefully handle NaNs
                                                    # (altitude = 0)
+        print(C_A, C_N)
+
         if np.isnan(C_N):
             import pdb; pdb.set_trace()
         F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
