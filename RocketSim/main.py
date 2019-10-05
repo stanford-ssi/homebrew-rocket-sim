@@ -135,8 +135,7 @@ while True:
         20.05 * np.sqrt(temp))                 # mach number (TODO: match paper)
     if mach > 0:                               # if we're moving
         angle_of_attack = 0.0
-        print(mach, angle_of_attack, z)
-        import pdb; pdb.set_trace()
+        # print(mach, angle_of_attack, z)
         lookup_results = lookup(
             [mach], [angle_of_attack], [z],
             X_cm, M)                               # DATCOM lookup results
@@ -145,10 +144,7 @@ while True:
                                                    # ...coefficients
                                                    # TODO: gracefully handle NaNs
                                                    # (altitude = 0)
-        print(C_A, C_N)
-
-        if np.isnan(C_N):
-            import pdb; pdb.set_trace()
+        # print(C_A, C_N)
         F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
                                                    # ...aerodynamic force
         F_A = -F_A_mag * R_A                       # axial aerodynamic force
