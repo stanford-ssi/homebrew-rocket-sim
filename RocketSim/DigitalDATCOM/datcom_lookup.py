@@ -59,7 +59,7 @@ def lookup(machs, alphas, alts, cg, mass):
     coeffs = {}
 
     while True:
-        card_start = datcom_output.find('FLIGHT CONDITIONS')
+        card_start = datcom_output.find('CHARACTERISTICS AT ANGLE OF ATTACK AND IN SIDESLIP')
         if card_start == -1:
             break
         conds_start = card_start + datcom_output[card_start:].find('\n0') + 3
@@ -86,4 +86,4 @@ def lookup(machs, alphas, alts, cg, mass):
 
 
 # print(lookup([0.1, 0.2], [0.1, 0.2], [100, 200], 1, 1))
-print(lookup([0.8, 0.9], [0.0], [0.0], 1, 1))
+# print(lookup([0.1, 0.8, 0.9], [0.0], [0.0], 1, 1))

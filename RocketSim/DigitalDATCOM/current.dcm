@@ -1,5 +1,5 @@
- $FLTCON NMACH=2,
-         MACH(1)=0.8,0.9,
+ $FLTCON NMACH=3,
+         MACH(1)=0.1,0.8,0.9,
          NALPHA=1,
          ALSCHD(1)=0.0,
          NALT=1,
