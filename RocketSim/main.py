@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from NRLMSISE00.nrlmsise_00_header import *
 from NRLMSISE00.nrlmsise_00 import *
 from DigitalDATCOM.datcom_lookup import lookup
-
+from scipy.interpolate import griddata
 
 def parse_thrust_curve(fname, time_step):
     tree = ET.parse(fname)
@@ -48,7 +48,24 @@ def safe_normalize(v):
     norm = np.linalg.norm(v)
     return v / norm if norm > 0 else v
 
+def loadDATCOM(param_name='DigitalDATCOM/LookupTableParameters.npz',coeff_name='DigitalDATCOM/LookupTableCoeffs.npz'):
+    fp = np.load(param_name,allow_pickle=True)
+    fc = np.load(coeff_name,allow_pickle=True)
+    global coeff_data
+    coeff_data=fc['arr_0']
+    global param_data
+    param_data=fp['arr_0']
+    fp.close()
+    fc.close()
 
+def coeffs_for_conditions(mach, alpha, altitude, cg, mass):
+    interpolated = griddata(param_data,coeff_data,(np.transpose([mach, alpha, altitude])),fill_value=0,method="nearest")
+    return interpolated[0]
+
+
+loadDATCOM()
+DATCOM_COLUMNS = ['ALPHA', 'CD', 'CL', 'CM', 'CN', 'CA', 'XCP',
+           'CLA', 'CMA', 'CYB', 'CNB', 'CLB']
 times, positions = [], []
 
 dt = 0.1                            # timestep, s
@@ -136,11 +153,11 @@ while True:
     if mach > 0:                               # if we're moving
         angle_of_attack = 0.0
         # print(mach, angle_of_attack, z)
-        lookup_results = lookup(
+        coeffs = coeffs_for_conditions(
             [mach], [angle_of_attack], [z],
             X_cm, M)                               # DATCOM lookup results
-        coeffs = list(lookup_results.values())[0]  # coefficients from DATCOM
-        C_A, C_N = coeffs['CA'], coeffs['CN']      # axial and normal aerodynamic
+          # coefficients from DATCOM
+        C_A, C_N = coeffs[DATCOM_COLUMNS.index('CA')], coeffs[DATCOM_COLUMNS.index('CN')] # axial and normal aerodynamic
                                                    # ...coefficients
                                                    # TODO: gracefully handle NaNs
                                                    # (altitude = 0)
