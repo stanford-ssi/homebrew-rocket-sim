@@ -56,7 +56,8 @@ def lookup(machs, alphas, alts, cg, mass):
     with open(os.path.join(datcom_path, OUTPUT_NAME), 'r') as f:
         datcom_output = f.read()
 
-    coeffs = {}
+    parameters = []
+    coeffs = []
 
     while True:
         card_start = datcom_output.find('CHARACTERISTICS AT ANGLE OF ATTACK AND IN SIDESLIP')
@@ -77,13 +78,17 @@ def lookup(machs, alphas, alts, cg, mass):
             mach, alt = conds[:2]
             for diff_text in diffs_text.split('\n'):
                 entries = [parse_float(diff) for diff in diff_text.split()]
-                values = dict(zip(COLUMNS[1:], entries[1:]))
+                values = entries[1:]
                 alpha = entries[0]
-                coeffs[(mach, alpha, alt)] = values
+                parameters.append([mach, alpha, alt])
+                coeffs.append(values)
         datcom_output = datcom_output[diffs_end:]
 
-    return coeffs
+    return  np.array(parameters),np.array(coeffs)
 
 
 # print(lookup([0.1, 0.2], [0.1, 0.2], [100, 200], 1, 1))
 # print(lookup([0.1, 0.8, 0.9], [0.0], [0.0], 1, 1))
+save_params, save_coeffs = lookup([0.1,0.2,0.3,0.4,0.5,0.6,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.5,3.0,3.5],[0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0],[26000,32526.32,39052.63,45578.95,52105.26,58631.58,65157.89,71684.21,78210.53,84736.84,91263.16,97789.47,104315.79,110842.11,117368.42,123894.74,130421.05],1.2,20)
+np.savez('LookupTableParameters.npz',save_params)
+np.savez('LookupTableCoeffs.npz',save_coeffs)
