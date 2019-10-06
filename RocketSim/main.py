@@ -11,10 +11,10 @@ from scipy.interpolate import griddata
 
 # All SI units
 rocket_mass = 16  # not including motor
-time_step = 3
+time_step = 0.05
 c_d = 0.5
 area = 0.00258064
-altitude = 0
+altitude = 26000
 g = 9.8
 time, velocity, acc = 0, 0, 0
 positions, velocities, accelerations, times = [], [], [], []
@@ -84,9 +84,16 @@ while True:
 
     weight = mass * g
     density, temperature = get_d_t_for_altitude(altitude)
-    mach = velocity / (20.05 * np.sqrt(temperature))
 
-    mach = 0.4
+    mach = round(velocity /(20.05 * np.sqrt(temperature)),3)
+    if mach<=0.1:
+        mach=0.1
+    elif mach>=0.6 and mach <= 1:
+        mach = 0.59
+    elif mach >= 1 and mach <= 1.4:
+        mach = 1.41
+
+
     alpha = 1.0
     cg = 1.2
 
@@ -95,7 +102,11 @@ while True:
     # We could look up the coefficients by mach, alpha, and altitude again,
     # but floating point error in DATCOM makes the values in the keys in coeffs
     # differ from mach, alpha, and altitude
-    coeffs = list(lookup([mach], [alpha], [altitude], cg, mass).values())[0]
+    try:
+        coeffs = list(lookup([mach], [alpha], [altitude], cg, mass).values())[0]
+    except:
+        print([mach], [alpha], [altitude])
+        break
     drag_force = 0.5 * density * (velocity ** 2) * area * coeffs['CD']
 
     net_force = thrust - weight - drag_force
@@ -104,7 +115,7 @@ while True:
     velocity += delta_v
     delta_x = velocity * time_step
     altitude += delta_x
-    print(altitude)
+    #print(altitude)
 
     if altitude < 0:
         times.append(time)
