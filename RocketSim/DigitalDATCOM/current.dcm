@@ -1,10 +1,10 @@
  $FLTCON NMACH=1,
-         MACH(1)=0.676,
+         MACH(1)=4.617,
          NALPHA=1,
          ALSCHD(1)=0.0,
          NALT=1,
-         ALT(1)=77.545,
-         WT=22.6453932,LOOP=3.$
+         ALT(1)=109.631,
+         WT=16,LOOP=3.$
  $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$
  $SYNTHS XCG=0.5,ZCG=0.0$
  $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,

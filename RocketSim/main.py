@@ -71,7 +71,7 @@ G = 6.673E-11                       # Gravitational constant, m^3/(kg * s)
 Y_A0 = np.array([1.0, 0.0, 0.0])    # yaw axis
 P_A0 = np.array([0.0, 1.0, 0.0])    # pitch axis
 R_A0 = np.array([0.0, 0.0, 1.0])    # roll axis
-m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da 
+m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da
 
 t = 0.0                             # time, s
 P = np.array([0.0, 0.0, 0.0])       # momentum, kg * m/s
@@ -79,7 +79,7 @@ L = np.array([0.0, 0.0, 0.0])       # angular momentum, kg * m^2/s
 Q = np.quaternion(1, 0, 0, 0)       # rotation quaternion
                                     # ...(rotation relative to pointing
                                     # ...directly upward)
-X = np.array([0.0, 0.0, 0.0])       # position relative to ground, m
+X = np.array([0.0, 0.0, 26000.0])       # position relative to ground, m
 I_0 = np.diag([1.0, 1.0, 1.0])      # moments of inertia, kg * m^2
                                     # ...(in x, y, and z direction resp.)
 W = 0.0                             # wind velocity, m/s
@@ -97,7 +97,7 @@ while True:
 
     X_dot = P / M                              # derivative of position
     R = quaternion.as_rotation_matrix(Q)       # rotation matrix
-    R_A = np.dot(R, R_A0.T)                    # unit vector in roll axis 
+    R_A = np.dot(R, R_A0.T)                    # unit vector in roll axis
     omega = np.linalg.multi_dot(
         (R, np.linalg.inv(I_0), R.T, L.T))     # angular velocity
     s, v = Q.w, np.array([Q.x, Q.y, Q.z])      # components of quaternion
@@ -132,7 +132,13 @@ while True:
     rho, temp = get_atmospheric_properties(z)  # air density
 
     mach = np.linalg.norm(V) / (
-        20.05 * np.sqrt(temp))                 # mach number (TODO: match paper)
+        20.05 * np.sqrt(temp))
+    if mach<=0.1:
+        mach=0.1
+    elif mach>=0.6 and mach <= 1:
+        mach = 0.59
+    elif mach >= 1 and mach <= 1.4:
+        mach = 1.41                            # mach number (TODO: match paper)
     if mach > 0:                               # if we're moving
         angle_of_attack = 0.0
         # print(mach, angle_of_attack, z)
@@ -144,23 +150,23 @@ while True:
                                                    # ...coefficients
                                                    # TODO: gracefully handle NaNs
                                                    # (altitude = 0)
-        # print(C_A, C_N)
+        #print(C_A, C_N)
         F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
                                                    # ...aerodynamic force
         F_A = -F_A_mag * R_A                       # axial aerodynamic force
-        F_N_mag = 0.5 * rho * V ** 2 * A_RB * C_N  # magnitude of normal 
+        F_N_mag = 0.5 * rho * V ** 2 * A_RB * C_N  # magnitude of normal
                                                    # ...aerodynamic force
         F_N = F_N_mag * np.cross(
             R_A, np.cross(R_A, V_hat))             # normal aerodynamic force
     else:                                          # don't DATCOM at mach zero
-        F_A = np.array([0.0, 0.0, 0.0])            # axial aerodynamic force 
+        F_A = np.array([0.0, 0.0, 0.0])            # axial aerodynamic force
         F_N_mag = 0.0
         F_N = np.array([0.0, 0.0, 0.0])            # normal aerodynamic force
 
     F = F_T + F_g + F_A + F_N                  # total force
 
     tau_N = (F_N_mag * X_bar *
-             np.cross(R_A, V_hat))             # torque caused by normal force 
+             np.cross(R_A, V_hat))             # torque caused by normal force
     tau_da = -C_da * np.linalg.multi_dot(
         (R, m, np.linalg.inv(R), omega))       # torque due to thrust damping
                                                # ...(thrust slowing the
