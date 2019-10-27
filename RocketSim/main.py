@@ -150,6 +150,18 @@ while True:
                                                    # ...coefficients
                                                    # TODO: gracefully handle NaNs
                                                    # (altitude = 0)
+        C_D = coeffs['CD']                         # Vehicle drag coefficient
+        C_L = coeffs['CL']                         # Vehicle lift coefficient
+        C_M = coeffs['CM']                         # Vehicle pitching-moment coeff. 
+        C_L_A = coeffs['CLA']                      # Derivative of lift coeff. w.r.t. alpha
+        C_M_A = coeffs['CMA']                      # Derivative of pitching moment coeff. w.r.t. alpha
+        C_Y_B = coeffs['CYB']                      # Side force coeff. derivative w.r.t. sideslip angle
+        C_N_B = coeffs['CNB']                      # Derivative of yawing-moment coeff. w.r.t. sideslip angle
+        C_L_B = coeffs['CLB']                      # Derivative of rolling-moment coeff. w.r.t.sideslip angle
+        
+        
+        
+        
         #print(C_A, C_N)
         F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
                                                    # ...aerodynamic force
