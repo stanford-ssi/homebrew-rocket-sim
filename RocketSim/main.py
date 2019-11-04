@@ -52,6 +52,7 @@ def safe_normalize(v):
 times, positions = [], []
 
 dt = 0.1                            # timestep, s
+                                    # TODO: implement Thomas's scipy.odeint
 curve_vals = parse_thrust_curve(
     'Cesaroni_N5800.xml', dt)
 M_ms, T_ms, _ = curve_vals          # rocket masses, kg,
@@ -61,8 +62,10 @@ curve_index = 0                     # index for previous two
 M_r = 16                            # rocket mass, kg
 X_cp = 0.25                         # rocket center of pressure
                                     # ...from nose tip, m
+                                    # TODO: update this as the motor burns
 X_cm = 0.5                          # rocket center of gravity
                                     # ...from nose tip, m
+                                    # TODO: update this as the motor burns
 A_RB = 0.0013                       # rocket cross-sectional area, m^2
 M_E = 5.974E24                      # Earth mass, kg
 r_E = 6378100                       # Earth radius, m
@@ -75,13 +78,14 @@ m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da
 
 t = 0.0                             # time, s
 P = np.array([0.0, 0.0, 0.0])       # momentum, kg * m/s
-L = np.array([0.0, 0.0, 0.0])       # angular momentum, kg * m^2/s
+L = np.array([0.0, 0.0, 0.165])     # angular momentum, kg * m^2/s
 Q = np.quaternion(1, 0, 0, 0)       # rotation quaternion
                                     # ...(rotation relative to pointing
                                     # ...directly upward)
 X = np.array([0.0, 0.0, 26000.0])       # position relative to ground, m
-I_0 = np.diag([1.0, 1.0, 1.0])      # moments of inertia, kg * m^2
+I_0 = np.diag([1.5, 1.5, 0.011])      # moments of inertia, kg * m^2
                                     # ...(in x, y, and z direction resp.)
+                                    # TODO: update this as the motor burns
 W = 0.0                             # wind velocity, m/s
 C_da = 0.0                          # damping coefficient (TODO: calculate)
 
