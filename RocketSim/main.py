@@ -23,6 +23,8 @@ def parse_thrust_curve(fname, time_step):
     burn_time = float(root[0][0].attrib['burn-time'])
     sample_times = time_step * np.arange(0, np.ceil(burn_time / time_step))
     motor_masses = np.interp(sample_times, motor_times, motor_masses)
+    M_motor_casing = 5.401
+    motor_masses = motor_masses + M_motor_casing
     motor_thrusts = np.interp(sample_times, motor_times, motor_thrusts)
     return motor_masses, motor_thrusts, sample_times
 
@@ -61,9 +63,11 @@ curve_index = 0                     # index for previous two
 M_r = 16                            # rocket mass, kg
 X_cp = 0.25                         # rocket center of pressure
                                     # ...from nose tip, m (lol I sure hope this is wrong)
+X_rocket = 1                        # wtf is the length of the rocket TODO: ask julia about this probably
 X_cm_rocket = 0.5                   # Empty rocket center of gravity
                                     # ...from nose tip, m (for now, dummy numbers)
-X_cm_motor = 0.75                   # Rocket motor center of gravity
+X_cm_motor_0 = 0.6195               # motor center of gravity from bottom, m
+X_cm_motor = X_rocket - X_cm_motor_0# Rocket motor center of gravity
                                     # ...from nose tip, m (for now, dummy numbers)
 A_RB = 0.0013                       # rocket cross-sectional area, m^2
 M_E = 5.974E24                      # Earth mass, kg
@@ -95,14 +99,13 @@ while True:
     M_mc = 5.401                               # mass of motor casing, kg
     T = 0                                      # thrust
     if curve_index < len(M_ms):                # if motor isn't spent:
-        M_motor = M_ms[curve_index] + M_mc     # calculate total motor mass
-        M += M_motor                           # add motor mass
+        M += M_ms[curve_index]                 # add motor mass
         T = T_ms[curve_index]                  # set thrust
         #Calculate the center of mass
-        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_motor) / (M_r + M_motor)
+        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_s[curve_index]) / (M_r + M_s[curve_index])
     else:
         M_motor = M_ms[-1] + M_mc
-        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_motor) / (M_r + M_motor)
+        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_s[-1]) / (M_r + M_s[-1])
     
     X_dot = P / M                              # derivative of position
     R = quaternion.as_rotation_matrix(Q)       # rotation matrix
