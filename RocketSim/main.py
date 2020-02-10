@@ -263,8 +263,5 @@ while True:
         positions.append(tuple(X))
         break
 
-# plt.plot(times, positions)
-# plt.show()
-
-print(positions)
-import pdb; pdb.set_trace()
+plt.plot(times, positions)
+plt.show()
