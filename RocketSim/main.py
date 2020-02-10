@@ -11,40 +11,102 @@ from DigitalDATCOM.datcom_lookup import lookup
 
 
 def parse_thrust_curve(fname, time_step):
+    """Parses a thrust curve from an XML file.
+
+    Args:
+        fname: filename of XML file with motor data
+        time_step: amount of time between time steps (s)
+    Returns:
+        motor_masses: list of motor masses at each time step (kg)
+        motor_thrusts: list of thrusts at each time step (N)
+        sample_times: times at which each sample is taken (s)
+    """
+    # Get the root of the XML file
     tree = ET.parse(fname)
     root = tree.getroot()
+
+    # Create empty lists for data we're collecting
     motor_masses = []
     motor_thrusts = []
     motor_times = []
+
+    # For each entry in our XML file
     for child in root[0][0][1]:
+        # Append the data in that entry
         motor_masses.append(float(child.attrib['m']) / 1000)
         motor_thrusts.append(float(child.attrib['f']))
         motor_times.append(float(child.attrib['t']))
+
+    # Get the burn time of the motor
     burn_time = float(root[0][0].attrib['burn-time'])
+
+    # Calculate the times we want to sample at
     sample_times = time_step * np.arange(0, np.ceil(burn_time / time_step))
+
+    # Interpolate motor masses and thursts to those time steps
     motor_masses = np.interp(sample_times, motor_times, motor_masses)
     motor_thrusts = np.interp(sample_times, motor_times, motor_thrusts)
+
+    # Return it all
     return motor_masses, motor_thrusts, sample_times
 
 
 def get_atmospheric_properties(altitude):
+    """Parses a thrust curve from an XML file.
+
+    Args:
+        altitude: altitude to get data at (m)
+    Returns:
+        rho: air density at altitude (kg/m^3)
+        temp: temperature (degrees C)
+    """
+    # Get output data, input data, and flags from NRLMSISE library
     output = nrlmsise_output()
     model_input = nrlmsise_input()
     flags = nrlmsise_flags()
+
+    # Create an array to hold Ap-indexes for past (geomagnetic activity)
     aph = ap_array()
-    flags.switches[0] = 0  # output in MKS
-    model_input.alt = altitude / 1000  # convert to km
+
+    # Ensure output is in MKS units
+    flags.switches[0] = 0
+
+    # Convert altitude to km
+    model_input.alt = altitude / 1000
+
+    # Set location to Spaceport America
     model_input.g_lat = 32.990371  # Spaceport America
     model_input.g_long = -106.975116
+
+    # For simplicity, assume the Ap-index has been 100 for the last while
     for i in range(7):
         aph.a[i] = 100
+
+    # Use all default settings
     for i in range(1, 24):
         flags.switches[i] = 1
+
+    # Run the model
     gtd7(model_input, flags, output)
-    return output.d[5] * 1000, output.t[1]  # total air density in KG/M^3
+
+    # Get air density in kg/m^3
+    rho = output.d[5] * 1000
+
+    # Get temperature
+    temp = output.t[1]
+    return rho, temp
 
 
 def safe_normalize(v):
+    """Normalizes a vector, unless it's zero.
+    In that case, it returns zero.
+
+    Args:
+        v: input vector
+    Returns:
+        v_hat: normalized vector
+    """
+    # Get the norm of the vector and divide it out unless zero
     norm = np.linalg.norm(v)
     return v / norm if norm > 0 else v
 
@@ -158,10 +220,10 @@ while True:
         C_Y_B = coeffs['CYB']                      # Side force coeff. derivative w.r.t. sideslip angle
         C_N_B = coeffs['CNB']                      # Derivative of yawing-moment coeff. w.r.t. sideslip angle
         C_L_B = coeffs['CLB']                      # Derivative of rolling-moment coeff. w.r.t.sideslip angle
-        
-        
-        
-        
+
+
+
+
         #print(C_A, C_N)
         F_A_mag = 0.5 * rho * V ** 2 * A_RB * C_A  # magnitude of axial
                                                    # ...aerodynamic force
