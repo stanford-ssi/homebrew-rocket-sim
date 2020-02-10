@@ -60,11 +60,11 @@ curve_index = 0                     # index for previous two
 
 M_r = 16                            # rocket mass, kg
 X_cp = 0.25                         # rocket center of pressure
-                                    # ...from nose tip, m
-X_cm_rocket = 0.5                          # Empty rocket center of gravity
-                                    # ...from nose tip, m
+                                    # ...from nose tip, m (lol I sure hope this is wrong -Seba)
+X_cm_rocket = 0.5                   # Empty rocket center of gravity
+                                    # ...from nose tip, m (for now, dummy numbers)
 X_cm_motor = 0.75                   # Rocket motor center of gravity
-                                    # ...from nose tip, m
+                                    # ...from nose tip, m (for now, dummy numbers)
 A_RB = 0.0013                       # rocket cross-sectional area, m^2
 M_E = 5.974E24                      # Earth mass, kg
 r_E = 6378100                       # Earth radius, m
