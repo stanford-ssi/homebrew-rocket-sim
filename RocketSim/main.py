@@ -61,7 +61,9 @@ curve_index = 0                     # index for previous two
 M_r = 16                            # rocket mass, kg
 X_cp = 0.25                         # rocket center of pressure
                                     # ...from nose tip, m
-X_cm = 0.5                          # rocket center of gravity
+X_cm_rocket = 0.5                          # Empty rocket center of gravity
+                                    # ...from nose tip, m
+X_cm_motor = 0.75                   # Rocket motor center of gravity
                                     # ...from nose tip, m
 A_RB = 0.0013                       # rocket cross-sectional area, m^2
 M_E = 5.974E24                      # Earth mass, kg
@@ -94,7 +96,11 @@ while True:
     if curve_index < len(M_ms):                # if motor isn't spent:
         M += M_ms[curve_index]                 # add motor mass
         T = T_ms[curve_index]                  # set thrust
-
+        #Calculate the center of mass
+        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_ms[curve_index]) / (M_r + M_ms[curve_index] )
+    else:
+        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_ms[-1]) / (M_r + M_ms[-1])
+    
     X_dot = P / M                              # derivative of position
     R = quaternion.as_rotation_matrix(Q)       # rotation matrix
     R_A = np.dot(R, R_A0.T)                    # unit vector in roll axis
