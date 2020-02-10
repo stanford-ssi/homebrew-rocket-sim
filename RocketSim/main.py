@@ -60,7 +60,7 @@ curve_index = 0                     # index for previous two
 
 M_r = 16                            # rocket mass, kg
 X_cp = 0.25                         # rocket center of pressure
-                                    # ...from nose tip, m (lol I sure hope this is wrong -Seba)
+                                    # ...from nose tip, m (lol I sure hope this is wrong)
 X_cm_rocket = 0.5                   # Empty rocket center of gravity
                                     # ...from nose tip, m (for now, dummy numbers)
 X_cm_motor = 0.75                   # Rocket motor center of gravity
@@ -92,14 +92,17 @@ while True:
     positions.append(tuple(X))
 
     M = M_r                                    # total mass
+    M_mc = 5.401                               # mass of motor casing, kg
     T = 0                                      # thrust
     if curve_index < len(M_ms):                # if motor isn't spent:
-        M += M_ms[curve_index]                 # add motor mass
+        M_motor = M_ms[curve_index] + M_mc     # calculate total motor mass
+        M += M_motor                           # add motor mass
         T = T_ms[curve_index]                  # set thrust
         #Calculate the center of mass
-        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_ms[curve_index]) / (M_r + M_ms[curve_index] )
+        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_motor) / (M_r + M_motor)
     else:
-        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_ms[-1]) / (M_r + M_ms[-1])
+        M_motor = M_ms[-1] + M_mc
+        X_cm = (X_cm_rocket * M_r + X_cm_motor * M_motor) / (M_r + M_motor)
     
     X_dot = P / M                              # derivative of position
     R = quaternion.as_rotation_matrix(Q)       # rotation matrix
