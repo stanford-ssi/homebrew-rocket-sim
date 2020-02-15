@@ -111,8 +111,11 @@ def safe_normalize(v):
     return v / norm if norm > 0 else v
 
 
+
+# Create lists for times and positions at each timestep
 times, positions = [], []
 
+# Set timestep and load thrust curve
 dt = 0.1                            # timestep, s
 curve_vals = parse_thrust_curve(
     'Cesaroni_N5800.xml', dt)
@@ -120,6 +123,8 @@ M_ms, T_ms, _ = curve_vals          # rocket masses, kg,
                                     # ... and rocket thrusts, N
 curve_index = 0                     # index for previous two
 
+
+# Set masses, distances, areas, etc.
 M_r = 16                            # rocket mass, kg
 X_cp = 0.25                         # rocket center of pressure
                                     # ...from nose tip, m
@@ -130,36 +135,49 @@ M_E = 5.974E24                      # Earth mass, kg
 r_E = 6378100                       # Earth radius, m
 G = 6.673E-11                       # Gravitational constant, m^3/(kg * s)
 
+# Set yaw axis as first coordinate, pitch axis as second, roll axis as third
 Y_A0 = np.array([1.0, 0.0, 0.0])    # yaw axis
 P_A0 = np.array([0.0, 1.0, 0.0])    # pitch axis
 R_A0 = np.array([0.0, 0.0, 1.0])    # roll axis
 m = np.diag([1.0, 1.0, 0.0])        # convenience matrix for computing tau_da
 
+# Set current time, momentum, angular momentum, rotation to zero
 t = 0.0                             # time, s
 P = np.array([0.0, 0.0, 0.0])       # momentum, kg * m/s
 L = np.array([0.0, 0.0, 0.0])       # angular momentum, kg * m^2/s
 Q = np.quaternion(1, 0, 0, 0)       # rotation quaternion
                                     # ...(rotation relative to pointing
                                     # ...directly upward)
-X = np.array([0.0, 0.0, 26000.0])       # position relative to ground, m
+
+# Set initial position, moment of inertia, wind, aerodynamic damping
+X = np.array([0.0, 0.0, 26000.0])   # position relative to ground, m
 I_0 = np.diag([1.0, 1.0, 1.0])      # moments of inertia, kg * m^2
                                     # ...(in x, y, and z direction resp.)
 W = 0.0                             # wind velocity, m/s
 C_da = 0.0                          # damping coefficient (TODO: calculate)
 
+
+# Loop until we hit the ground
 while True:
+    # Record current position and time
     times.append(t)
     positions.append(tuple(X))
 
+    # Set current mass to rocket + remaining fuel, get thrust
     M = M_r                                    # total mass
     T = 0                                      # thrust
     if curve_index < len(M_ms):                # if motor isn't spent:
         M += M_ms[curve_index]                 # add motor mass
         T = T_ms[curve_index]                  # set thrust
 
+    # Get velocity (just momentum over mass)
     X_dot = P / M                              # derivative of position
+
+    # Get rotation and based on that, unit vector along which rocket is pointing
     R = quaternion.as_rotation_matrix(Q)       # rotation matrix
     R_A = np.dot(R, R_A0.T)                    # unit vector in roll axis
+
+    # Get angular velocity and how fast we're rotating
     omega = np.linalg.multi_dot(
         (R, np.linalg.inv(I_0), R.T, L.T))     # angular velocity
     s, v = Q.w, np.array([Q.x, Q.y, Q.z])      # components of quaternion
@@ -167,6 +185,9 @@ while True:
     v_dot = 0.5 * (
         s * omega + np.cross(omega, v))        # derivative of the rest
 
+    # Compute how fast center of pressure is moving
+    # (this is just how fast center of mass moves, plus a term
+    # to account for rotation)
     V_cm = X_dot + W                           # velocity of center of mass
     omega_hat = safe_normalize(omega)          # normalized angular velocity
     X_bar = np.abs(X_cp - X_cm)
@@ -175,11 +196,14 @@ while True:
                   np.cross(R_A, omega))        # velocity of center of pressure
                                                # ...due to angular velocity
     V = V_cm + V_omega                         # total velocity
+
+    # Find the angle of attack
     V_hat = safe_normalize(V)                  # normalized velocity
     alpha = np.arccos(np.dot(V_hat, R_A))      # angle of attack
                                                # TODO: fix reference angles to mesh with
                                                # DATCOM (default angle should be pi/2)
 
+    # Compute thrust force, gravitational force
     F_T = T * R_A                              # force due to thrust
                                                # ...(note by differing
                                                # ...conventions we lose a
@@ -191,16 +215,24 @@ while True:
     F_g = np.array([0.0, 0.0, 0.0])
     if z > 0:                                  # accounting for normal force
         F_g[2] = -M * g                        # force due to gravity
-    rho, temp = get_atmospheric_properties(z)  # air density
 
+    # Get mach number
+    rho, temp = get_atmospheric_properties(z)  # air density
     mach = np.linalg.norm(V) / (
         20.05 * np.sqrt(temp))
+
+    # Round mach number up or down to avoid probelmatic region
+    # which DATCOM can't model well (actually errors in the
+    # regions we avoid!)
     if mach<=0.1:
         mach=0.1
     elif mach>=0.6 and mach <= 1:
         mach = 0.59
     elif mach >= 1 and mach <= 1.4:
         mach = 1.41                            # mach number (TODO: match paper)
+
+    # If we're moving, get our new aerodynamic coefficients
+    # as well as our new aerodynamic forces
     if mach > 0:                               # if we're moving
         angle_of_attack = 0.0
         # print(mach, angle_of_attack, z)
@@ -237,8 +269,10 @@ while True:
         F_N_mag = 0.0
         F_N = np.array([0.0, 0.0, 0.0])            # normal aerodynamic force
 
+    # Compute total force (just add it up!)
     F = F_T + F_g + F_A + F_N                  # total force
 
+    # Compute torques from aerodynamic force and thrust damping, and add them
     tau_N = (F_N_mag * X_bar *
              np.cross(R_A, V_hat))             # torque caused by normal force
     tau_da = -C_da * np.linalg.multi_dot(
@@ -247,6 +281,7 @@ while True:
                                                # ...rocket's rotation)
     tau = tau_N + tau_da                       # total torque
 
+    # Update all of our state variables by adding their derivative * dt
     P += F * dt             # update momentum
     L += tau * dt           # update angular momentum
     Q.w += s_dot * dt       # update real part of quaternion
@@ -257,11 +292,13 @@ while True:
     t += dt                 # update time
     curve_index += 1
 
+    # If we're underground, end the simulation (this isn't "earthshot")
     z = X[2]                # get the z-coordinate
     if z < 0:               # if it's underground
         times.append(t)
         positions.append(tuple(X))
         break
 
+# Plot everything!
 plt.plot(times, positions)
 plt.show()
