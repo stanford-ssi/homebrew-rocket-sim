@@ -2,4 +2,7 @@
 *.sw[p]
 *.out
 *.log
+*.dat
+.DS_Store
 DigitalDATCOM/datcom
+datcom_log.txt
