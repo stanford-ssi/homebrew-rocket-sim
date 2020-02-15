@@ -31,12 +31,12 @@
 0******************************  INPUT DATA CARDS  ******************************
 
   $FLTCON NMACH=1,                                                                  ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          MACH(1)=4.617,                                                         
+          MACH(1)=0.676,                                                         
           NALPHA=1,                                                                 ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
           ALSCHD(1)=0.0,                                                         
           NALT=1,                                                                   ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
-          ALT(1)=109.631,                                                        
-          WT=16,LOOP=3.$                                                            ** ERROR **  0*A  0*B  0*C  0*D  0*E  1*F
+          ALT(1)=77.545,                                                         
+          WT=22.6453932,LOOP=3.$                                                 
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
   $SYNTHS XCG=0.5,ZCG=0.0$                                                       
   $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
@@ -50,12 +50,12 @@
 1          THE FOLLOWING IS A LIST OF ALL INPUT CARDS FOR THIS CASE.
 0
   $FLTCON NMACH=1,                                                               
-          MACH(1)=4.617,                                                         
+          MACH(1)=0.676,                                                         
           NALPHA=1,                                                              
           ALSCHD(1)=0.0,                                                         
           NALT=1,                                                                
-          ALT(1)=109.631,                                                        
-          WT=16,LOOP=3.$                                                         
+          ALT(1)=77.545,                                                         
+          WT=22.6453932,LOOP=3.$                                                 
   $OPTINS SREF=0.009,CBARR=0.104,BLREF=0.104$                                    
   $SYNTHS XCG=0.5,ZCG=0.0$                                                       
   $BODY   BNOSE=2.0,BLN=0.305,BLA=1.829,NX=18.0,                                 
@@ -81,12 +81,30 @@
   MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
  NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
               M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
-0 4.617     109.63    1569.02   1.0002E+05     287.437     1.0602E+08             0.009      0.104     0.104     0.500     0.000
+0 0.676      77.54     229.81   1.0040E+05     287.646     1.5567E+07             0.009      0.104     0.104     0.500     0.000
 0                                                               -------------------DERIVATIVE (PER DEGREE)-------------------
 0 ALPHA     CD       CL       CM       CN       CA       XCP        CLA          CMA          CYB          CNB          CLB
 0
-    0.0    0.266    0.000    0.0000   0.000    0.266   ******    0.000E+00    0.000E+00   -0.000E+00   -0.000E+00    0.000E+00
-0*** VEHICLE WEIGHT =     16.00 N. 
-0*** LEVEL FLIGHT LIFT COEFFICIENT = 0.00530
+    0.0    NDM      NDM       NDM     NDM      NDM      3.644    3.092E-02    1.127E-01   -3.092E-02   -1.127E-01    0.000E+00
+0*** NDM PRINTED WHEN NO DATCOM METHODS EXIST
+0*** VEHICLE WEIGHT =     22.65 N. 
+0*** LEVEL FLIGHT LIFT COEFFICIENT = 0.34851
+1                             AUTOMATED STABILITY AND CONTROL METHODS PER APRIL 1976 VERSION OF DATCOM
+                                             CONFIGURATION AUXILIARY AND PARTIAL OUTPUT
+                                                   DATCOM BODY ALONE CONFIGURATION
+                                                                RUN
+ -----------------------  FLIGHT CONDITIONS  ------------------------           --------------  REFERENCE DIMENSIONS  ------------
+  MACH    ALTITUDE   VELOCITY    PRESSURE    TEMPERATURE     REYNOLDS             REF.      REFERENCE LENGTH   MOMENT REF. CENTER
+ NUMBER                                                       NUMBER              AREA       LONG.     LAT.     HORIZ      VERT
+              M        M/SEC      N/ M**2       DEG K         1/ M                M**2         M         M         M         M
+0 0.676      77.54     229.81   1.0040E+05     287.646     1.5567E+07             0.009      0.104     0.104     0.500     0.000
+
+
+                                                       BASIC BODY PROPERTIES
+
+            WETTED AREA      XCG     ZCG     BASE AREA     ZERO LIFT DRAG   BASE DRAG   FRICTION DRAG   PRESSURE DRAG
+             0.6523E+00     0.50    0.00       0.0082           NDM           NDM           NDM             NDM 
+0*** NDM PRINTED WHEN NO DATCOM METHODS EXIST
+1
  Return to main program from M57O71
 1 END OF JOB.
