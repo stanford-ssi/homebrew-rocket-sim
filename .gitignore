@@ -1,2 +1,5 @@
 *.pyc
 *.sw[p]
+*.out
+*.log
+DigitalDATCOM/datcom
